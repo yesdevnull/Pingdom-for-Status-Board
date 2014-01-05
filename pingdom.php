@@ -3,6 +3,7 @@
 require_once ( 'config.php' );
 
 $resolution = filter_input ( INPUT_GET , 'resolution' , FILTER_SANITIZE_STRING );
+$autoHost = filter_input ( INPUT_GET , 'autohost' , FILTER_SANITIZE_STRING );
 $us = filter_input ( INPUT_GET , 'us' , FILTER_SANITIZE_STRING );
 
 $now = time();
@@ -22,17 +23,6 @@ $finalArray = [
 	]
 ];
 
-if ( count ( $checkHosts ) == 0 ) {
-	$finalArray['graph']['error'] = [
-		'message' => 'Error: No Hosts Defined (see README.md)' ,
-		'detail' => 'You must define at least 1 host in the config.php file.  This Status Board widget is useless without any hosts' ,
-	];
-	
-	header ( 'content-type: application/json' );
-	
-	exit ( json_encode ( $finalArray ) );
-}
-
 // Here we go!
 $ch = curl_init();
 
@@ -46,6 +36,43 @@ curl_setopt ( $ch , CURLOPT_RETURNTRANSFER , true );
 // @link https://www.pingdom.com/features/api/documentation/#php+code+example
 if ( strtoupper ( substr ( PHP_OS , 0 , 3 ) ) == 'WIN' ) {
 	curl_setopt ( $ch , CURLOPT_SSL_VERIFYPEER , 0 );
+}
+
+// If the PHP installation has gzip compression enabled, we'll use it
+// @link https://www.pingdom.com/features/api/documentation/#gzip
+if ( zlib_get_coding_type () == 'gzip' ) {
+	curl_setopt( $ch , CURLOPT_ENCODING , 'gzip' );
+}
+
+// Instead of filling out the $checkHosts array in config.php, should we instead get each host from Pingdom?
+if ( $autoHost ) {
+	curl_setopt ( $ch , CURLOPT_URL , 'https://api.pingdom.com/api/2.0/checks' );
+	
+	$response = json_decode ( curl_exec ( $ch ) , true );
+	
+	// Reset $checkHosts just so it doesn't double up any hosts from config.php
+	$checkHosts = [];
+	
+	// Grab each host's name and ID
+	foreach ( $response['checks'] as $host ) {
+		$checkHosts[] = [
+			'name' => $host['name'] ,
+			'id' => $host['id'] ,
+		];
+	}
+}
+
+// Make sure there's at least 1 host to check, otherwise it's pointless going any further
+if ( count ( $checkHosts ) == 0 ) {
+	$finalArray['graph']['error'] = [
+		'message' => 'Error: No Hosts Defined (see README.md)' ,
+		'detail' => 'You must define at least 1 host in the config.php file or add autohost=true to the query string.  This Status Board widget is useless without any hosts' ,
+	];
+	
+	//header ( 'content-type: application/json' );
+	
+	// Bye bye...
+	exit ( json_encode ( $finalArray ) );
 }
 
 switch ( $resolution ) {
@@ -147,7 +174,7 @@ curl_close ( $ch );
 
 $finalArray['graph']['datasequences'] = $responseTime;
 
-header ( 'content-type: application/json' );
+//header ( 'content-type: application/json' );
 
 echo json_encode ( $finalArray );
 
