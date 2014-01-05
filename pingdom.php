@@ -3,13 +3,14 @@
 require_once ( 'config.php' );
 
 $resolution = filter_input ( INPUT_GET , 'resolution' , FILTER_SANITIZE_STRING );
+$us = filter_input ( INPUT_GET , 'us' , FILTER_SANITIZE_STRING );
 
 $now = time();
 
 // Build the base graph
 $finalArray = [
 	'graph' => [
-		'title' => 'Response Time' ,
+		'title' => 'Check Response Time' ,
 		'type' => 'line' ,
 		'datasequences' => '' ,
 		'yAxis' => [
@@ -20,6 +21,17 @@ $finalArray = [
 		] ,
 	]
 ];
+
+if ( count ( $checkHosts ) == 0 ) {
+	$finalArray['graph']['error'] = [
+		'message' => 'Error: No Hosts Defined (see README.md)' ,
+		'detail' => 'You must define at least 1 host in the config.php file.  This Status Board widget is useless without any hosts' ,
+	];
+	
+	header ( 'content-type: application/json' );
+	
+	exit ( json_encode ( $finalArray ) );
+}
 
 // Here we go!
 $ch = curl_init();
@@ -37,6 +49,52 @@ if ( strtoupper ( substr ( PHP_OS , 0 , 3 ) ) == 'WIN' ) {
 }
 
 switch ( $resolution ) {
+	case 'last-week' :
+	
+		$finalArray['graph']['title'] .= ' (Last 7 Days)';
+		
+		$lastWeek = strtotime ( '-7 days' );
+		
+		// Enumerate through the list of hosts from config.php
+		foreach ( $checkHosts as $host ) {
+			curl_setopt ( $ch , CURLOPT_URL , 'https://api.pingdom.com/api/2.0/summary.performance/' . $host['id'] . '?from=' . $lastWeek . '&to=' . $now . '&resolution=day' );
+			
+			// Decode the response from Pingdom to an associative array
+			$response = json_decode ( curl_exec ( $ch ) , true );
+			
+			// Before we look through the response, was there an error?
+			if ( isset ( $response['error'] ) ) {
+				// Crap, there was an error!
+				// Send the error to Status Board
+				$finalArray['graph']['error'] = [
+					'message' => 'Error: ' . $response['error']['statusdesc'] . ' (' . $response['error']['statuscode'] . '): ' . $response['error']['errormessage'] ,
+					'detail' => $response['error']['errormessage'] ,
+				];
+				
+				// Abort this loop!
+				break;
+			}
+			
+			foreach ( $response['summary']['days'] as $hour ) {
+				$check[] = [
+					//'title' => date ( 'j/m' , $hour['starttime'] ) ,
+					'title' => ( empty ( $us ) ) ? date ( 'j/m' , $hour['starttime'] ) : date ( 'm/j' , $hour['starttime'] ) ,
+					'value' => $hour['avgresponse'] ,
+				];
+			}
+			
+			$responseTime[] = [
+				'title' => $host['name'] ,
+				'datapoints' => $check ,
+			];
+			
+			// Unset the $check variable so it doesn't insert values into the next hosts array
+			unset ( $check );
+			
+		}
+	
+	break;
+	
 	case 'last-day' :
 	default :
 	
