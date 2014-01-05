@@ -2,17 +2,18 @@
 
 require_once ( 'config.php' );
 
-$yesterday = strtotime ( '-23 hours' );
+$resolution = filter_input ( INPUT_GET , 'resolution' , FILTER_SANITIZE_STRING );
+
 $now = time();
 
 // Build the base graph
-$finalGraph = [
+$finalArray = [
 	'graph' => [
-		'title' => 'Response Time (Last Day)' ,
+		'title' => 'Response Time' ,
 		'type' => 'line' ,
-		'refreshEveryNSeconds' => '600' ,
 		'datasequences' => '' ,
 		'yAxis' => [
+			'minValue' => '0' ,
 			'units' => [
 				'suffix' => 'ms' ,
 			] ,
@@ -20,145 +21,76 @@ $finalGraph = [
 	]
 ];
 
-// Enumerate through the list of hosts from config.php
-foreach ( $checkHosts as $host ) {
-	// Here we go!
-	$ch = curl_init();
-	
-	curl_setopt ( $ch , CURLOPT_URL , 'https://api.pingdom.com/api/2.0/summary.performance/' . $host['id'] . '?from=' . $yesterday . '&to=' . $now . '&resolution=hour' );
-	curl_setopt ( $ch , CURLOPT_CUSTOMREQUEST , 'GET' );
-	curl_setopt ( $ch , CURLOPT_USERPWD , $pingdomCredentials['username'] . ':' . $pingdomCredentials['password'] );
-	curl_setopt ( $ch , CURLOPT_HTTPHEADER , [ 'App-Key: ' . $pingdomCredentials['appKey'] ] );
-	curl_setopt ( $ch , CURLOPT_RETURNTRANSFER , true );
-	
-	// Decode the response from Pingdom to an associative array
-	$response = json_decode ( curl_exec ( $ch ) , true );
-	
-	// ... and it's closed.
-	curl_close ( $ch );
-	
-	$checkOrig = [
-		[
-			'title' => '00:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '01:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '02:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '03:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '04:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '05:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '06:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '07:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '08:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '09:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '10:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '11:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '12:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '13:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '14:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '15:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '16:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '17:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '18:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '19:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '20:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '21:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '22:00' ,
-			'value' => '0' ,
-		] ,
-		[
-			'title' => '23:00' ,
-			'value' => '0' ,
-		] ,
-	];
-	
-	foreach ( $response['summary']['hours'] as $hour ) {
-		foreach ( $checkOrig as & $values ) {
-			if ( ( $values['title'] ) == ( date ( 'H:i' , $hour['starttime'] ) ) ) {
-				$values['value'] = $hour['avgresponse'];
-			}
-		}
-	}
-	
-	$responseTime[] = [
-		'title' => $host['name'] ,
-		'datapoints' => $checkOrig ,
-	];
-	
-	// Unset the $check variable so it doesn't insert values into the next hosts array
-	unset ($checkOrig);
+// Here we go!
+$ch = curl_init();
+
+// Set up the basic cURL details
+curl_setopt ( $ch , CURLOPT_CUSTOMREQUEST , 'GET' );
+curl_setopt ( $ch , CURLOPT_USERPWD , $pingdomCredentials['username'] . ':' . $pingdomCredentials['password'] );
+curl_setopt ( $ch , CURLOPT_HTTPHEADER , [ 'App-Key: ' . $pingdomCredentials['appKey'] ] );
+curl_setopt ( $ch , CURLOPT_RETURNTRANSFER , true );
+
+// Recommended by Pingdom's API page
+// @link https://www.pingdom.com/features/api/documentation/#php+code+example
+if ( strtoupper ( substr ( PHP_OS , 0 , 3 ) ) == 'WIN' ) {
+	curl_setopt ( $ch , CURLOPT_SSL_VERIFYPEER , 0 );
 }
 
-$finalGraph['graph']['datasequences'] = $responseTime;
+switch ( $resolution ) {
+	case 'last-day' :
+	default :
+	
+		$finalArray['graph']['title'] .= ' (Last 24 Hours)';
+		
+		$yesterday = strtotime ( '-23 hours' );
+		
+		// Enumerate through the list of hosts from config.php
+		foreach ( $checkHosts as $host ) {
+			curl_setopt ( $ch , CURLOPT_URL , 'https://api.pingdom.com/api/2.0/summary.performance/' . $host['id'] . '?from=' . $yesterday . '&to=' . $now . '&resolution=hour' );
+			
+			// Decode the response from Pingdom to an associative array
+			$response = json_decode ( curl_exec ( $ch ) , true );
+			
+			// Before we look through the response, was there an error?
+			if ( isset ( $response['error'] ) ) {
+				// Crap, there was an error!
+				// Send the error to Status Board
+				$finalArray['graph']['error'] = [
+					'message' => $response['error']['statusdesc'] . ' (' . $response['error']['statuscode'] . '): ' . $response['error']['errormessage'] ,
+					'detail' => $response['error']['errormessage'] ,
+				];
+				
+				// Abort this loop!
+				break;
+			}
+			
+			foreach ( $response['summary']['hours'] as $hour ) {
+				$check[] = [
+					'title' => date ( 'H:i' , $hour['starttime'] ) ,
+					'value' => $hour['avgresponse'] ,
+				];
+			}
+			
+			$responseTime[] = [
+				'title' => $host['name'] ,
+				'datapoints' => $check ,
+			];
+			
+			// Unset the $check variable so it doesn't insert values into the next hosts array
+			unset ( $check );
+		}
+	
+	// End last-day / default case
+	break;
+}
 
-//var_dump($finalGraph);
+// ... and it's closed.
+curl_close ( $ch );
+
+$finalArray['graph']['datasequences'] = $responseTime;
 
 header ( 'content-type: application/json' );
 
-echo json_encode ( $finalGraph );
+echo json_encode ( $finalArray );
 
 // And we're done!
