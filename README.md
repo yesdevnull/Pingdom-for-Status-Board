@@ -1,8 +1,8 @@
 # Pingdom for Status Board
-A graph of website response times from [Pingdom](http://pingdom.com) for Panic's [Status Board](http://panic.com/statusboard/).
+A graph of host response times from [Pingdom](http://pingdom.com) for Panic's [Status Board](http://panic.com/statusboard/) iPad app.
 
 ## Usage
-Before you can use this graph you'll need to supply your user credentials and a list of hosts/ids in a file called config.php
+If you only have a few host checks I recommend adding ```autohost=true``` to your query string.  ```autohost``` will pull __every__ host from Pingdom and graph its response time, so if you have 5+ hosts, your graph may look horrible.  If you'd rather only see certain hosts, specify them in the config.php file like below.
 
 ```php
 <?php
@@ -32,7 +32,6 @@ Log into [MyPingdom](https://my.pingdom.com) then for each host you want to chec
 
 ![Edit Check](http://www.yesdevnull.net/wp-content/uploads/2014/01/Edit_Check.png)
 
-
 ### U.S. Date Stamps
 
 If you're a citizen  of the U.S. and would prefer your datestamps in MM/DD form, please add a variable to the query string called ```us``` with the value of ```true```.  For example:
@@ -41,7 +40,7 @@ If you're a citizen  of the U.S. and would prefer your datestamps in MM/DD form,
 http://pretendco.com/path/to/pingdom.php?us=true
 ```
 
-OR
+Or, if you have multiple variables in a query string:
 
 ```
 http://pretendco.com/path/to/pingdom.php?resolution=last-week&us=true
@@ -52,6 +51,7 @@ http://pretendco.com/path/to/pingdom.php?resolution=last-week&us=true
 
 ### PHP Modules/Extensions
 - cURL
+- JSON
 
 ## TODO
-- Add support for more last hour, last week, last month and more...
+- Add support for more graphs like last hour, last month etc...
