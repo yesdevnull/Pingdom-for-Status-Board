@@ -23,6 +23,31 @@ $finalArray = [
 	]
 ];
 
+// Pingdom's Localization strings don't use the same characters as PHP's date function:
+// settings.dateformat is OK, but settings.timeformat needs some fixing
+// @link https://www.pingdom.com/features/api/documentation/#MethodGet+Account+Settings
+function processTime ( $time , $format ) {
+	$find = [
+		'%I' ,
+		'%p' ,
+		'%S' ,
+		'%M' ,
+		'%H' ,
+	];
+	
+	$replace = [
+		'h' ,
+		'a' ,
+		's' ,
+		'i' ,
+		'H' ,
+	];
+	
+	$newFormat = str_replace ( $find , $replace , $format );
+	
+	return date ( $newFormat , $time );
+}
+
 // Here we go!
 $ch = curl_init();
 
@@ -69,7 +94,7 @@ if ( count ( $checkHosts ) == 0 ) {
 		'detail' => 'You must define at least 1 host in the config.php file or add autohost=true to the query string.  This Status Board widget is useless without any hosts' ,
 	];
 	
-	//header ( 'content-type: application/json' );
+	header ( 'content-type: application/json' );
 	
 	// Bye bye...
 	exit ( json_encode ( $finalArray ) );
@@ -174,7 +199,7 @@ curl_close ( $ch );
 
 $finalArray['graph']['datasequences'] = $responseTime;
 
-//header ( 'content-type: application/json' );
+header ( 'content-type: application/json' );
 
 echo json_encode ( $finalArray );
 
