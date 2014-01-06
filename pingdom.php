@@ -28,22 +28,40 @@ $finalArray = [
 // @link https://www.pingdom.com/features/api/documentation/#MethodGet+Account+Settings
 function processTime ( $time , $format ) {
 	$find = [
+		'h' ,
 		'%I' ,
 		'%p' ,
 		'%S' ,
 		'%M' ,
 		'%H' ,
+		'm' ,
 	];
 	
 	$replace = [
+		'\h' ,
 		'h' ,
 		'a' ,
 		's' ,
 		'i' ,
 		'H' ,
+		'\m' ,
 	];
 	
 	$newFormat = str_replace ( $find , $replace , $format );
+	
+	if ( $newFormat{1} == ':' ) {
+		// This is for 14:45
+		$newFormat = substr ( $newFormat , 0 , 3 );
+	} else {
+		// This is for 14h45m
+		$newFormat = substr ( $newFormat , 0 , 6 );
+	}
+	
+	// We do this because 02:00 breaks the Status Board graph as it merges the am and pm values.
+	// This way, there's no confusion for Status Board!
+	if ( $newFormat == 'h:i' ) {
+		$newFormat .= 'a';
+	}
 	
 	return date ( $newFormat , $time );
 }
@@ -68,6 +86,12 @@ if ( strtoupper ( substr ( PHP_OS , 0 , 3 ) ) == 'WIN' ) {
 if ( zlib_get_coding_type () == 'gzip' ) {
 	curl_setopt( $ch , CURLOPT_ENCODING , 'gzip' );
 }
+
+curl_setopt ( $ch , CURLOPT_URL , 'https://api.pingdom.com/api/2.0/settings' );
+
+$settingsResponse = json_decode ( curl_exec ( $ch ) , true );
+
+$timeFormat = $settingsResponse['settings']['timeformat'];
 
 // Instead of filling out the $checkHosts array in config.php, should we instead get each host from Pingdom?
 if ( $autoHost ) {
@@ -176,7 +200,7 @@ switch ( $resolution ) {
 			
 			foreach ( $response['summary']['hours'] as $hour ) {
 				$check[] = [
-					'title' => date ( 'H:i' , $hour['starttime'] ) ,
+					'title' => processTime ( $hour['starttime'] , $timeFormat ) ,
 					'value' => $hour['avgresponse'] ,
 				];
 			}
