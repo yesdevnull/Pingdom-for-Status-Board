@@ -28,13 +28,16 @@ $checkHosts = [
 
 ### What's My Host's ID?
 
-Log into [MyPingdom](https://my.pingdom.com) then for each host you want to check, to go the "Edit Check" for each host then copy the ID from the address bar (see image below)
+Log into [My Pingdom](https://my.pingdom.com) then for each host you want to check, to go the "Edit Check" for each host then copy the ID from the address bar (see image below)
 
 ![Edit Check](http://www.yesdevnull.net/wp-content/uploads/2014/01/Edit_Check.png)
 
+### How Do I Get An API Key?
+Check out the Pingdom API's [Authentication](https://www.pingdom.com/features/api/documentation/#authentication) section for further instructions.
+
 ### U.S. Date Stamps
 
-If you're a citizen  of the U.S. and would prefer your datestamps in MM/DD form, please add a variable to the query string called ```us``` with the value of ```true```.  For example:
+If you're a citizen  of the U.S. and would prefer your date stamps in MM/DD form, please add a variable to the query string called ```us``` with the value of ```true```.  For example:
 
 ```
 http://pretendco.com/path/to/pingdom.php?us=true
@@ -49,9 +52,12 @@ http://pretendco.com/path/to/pingdom.php?resolution=last-week&us=true
 ## Requirements
 - PHP 5.4 or newer
 
-### PHP Modules/Extensions
+### Required PHP Modules/Extensions
 - cURL
 - JSON
+
+### Nice To Have PHP Modules/Extensions
+- zlib with ```gzip``` compression enabled
 
 ## TODO
 - Add support for more graphs like last hour, last month etc...
