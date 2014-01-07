@@ -100,6 +100,7 @@ if ( zlib_get_coding_type () == 'gzip' ) {
 	curl_setopt( $ch , CURLOPT_ENCODING , 'gzip' );
 }
 
+// Here I quickly pull your account Localization settings for time and date stamps
 curl_setopt ( $ch , CURLOPT_URL , 'https://api.pingdom.com/api/2.0/settings' );
 
 $settingsResponse = json_decode ( curl_exec ( $ch ) , true );
@@ -182,6 +183,7 @@ switch ( $resolution ) {
 			
 		}
 	
+	// End 'last-week' case
 	break;
 	
 	case 'last-day' :
@@ -189,6 +191,7 @@ switch ( $resolution ) {
 	
 		$finalArray['graph']['title'] .= ' (Last 24 Hours)';
 		
+		// If you do 1 day / 24 hours it doubles up the current timestamp with the timestamp 24 hours ago.  Not good!
 		$yesterday = strtotime ( '-23 hours' );
 		
 		// Enumerate through the list of hosts from config.php
