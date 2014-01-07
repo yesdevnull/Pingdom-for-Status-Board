@@ -35,19 +35,12 @@ Log into [My Pingdom](https://my.pingdom.com) then for each host you want to che
 ### How Do I Get An API Key?
 Check out the Pingdom API's [Authentication](https://www.pingdom.com/features/api/documentation/#authentication) section for further instructions.
 
-### U.S. Date Stamps
+### Time And Date Stamps
 
-If you're a citizen  of the U.S. and would prefer your date stamps in MM/DD form, please add a variable to the query string called ```us``` with the value of ```true```.  For example:
+If you're in the U.S., or you have a different way of reading time stamps, Pingdom for Status Board will respect your Localization settings for your account.  I do some parsing to ensure that the date and time outputs are identical to your expected output.
 
-```
-http://pretendco.com/path/to/pingdom.php?us=true
-```
+Please note that I strip the year and seconds off all timestamps.  Having the year in a date stamp makes the graph too messy, same with seconds.  I figure it's not necessary to see either of those time/dates.
 
-Or, if you have multiple variables in a query string:
-
-```
-http://pretendco.com/path/to/pingdom.php?resolution=last-week&us=true
-```
 
 ## Requirements
 - PHP 5.4 or newer

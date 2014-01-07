@@ -4,7 +4,6 @@ require_once ( 'config.php' );
 
 $resolution = filter_input ( INPUT_GET , 'resolution' , FILTER_SANITIZE_STRING );
 $autoHost = filter_input ( INPUT_GET , 'autohost' , FILTER_SANITIZE_STRING );
-$us = filter_input ( INPUT_GET , 'us' , FILTER_SANITIZE_STRING );
 
 $now = time();
 
@@ -66,6 +65,20 @@ function processTime ( $time , $format ) {
 	return date ( $newFormat , $time );
 }
 
+// Here I'm taking out the '%' signs and slightly reformatting the date string to 
+// only include the day and the month.
+function processDate ( $date , $format ) {
+	$newFormat = str_replace ( '%' , '' , $format );
+	
+	if ( substr ( $newFormat , 0 , 1 ) == 'Y' ) {
+		$newFormat = substr ( $newFormat , 2 , 3 );
+	} else {
+		$newFormat = substr ( $newFormat , 0 , 3 );
+	}
+	
+	return date ( $newFormat , $date );
+}
+
 // Here we go!
 $ch = curl_init();
 
@@ -91,6 +104,7 @@ curl_setopt ( $ch , CURLOPT_URL , 'https://api.pingdom.com/api/2.0/settings' );
 
 $settingsResponse = json_decode ( curl_exec ( $ch ) , true );
 
+$dateFormat = $settingsResponse['settings']['dateformat'];
 $timeFormat = $settingsResponse['settings']['timeformat'];
 
 // Instead of filling out the $checkHosts array in config.php, should we instead get each host from Pingdom?
@@ -153,8 +167,7 @@ switch ( $resolution ) {
 			
 			foreach ( $response['summary']['days'] as $hour ) {
 				$check[] = [
-					//'title' => date ( 'j/m' , $hour['starttime'] ) ,
-					'title' => ( empty ( $us ) ) ? date ( 'j/m' , $hour['starttime'] ) : date ( 'm/j' , $hour['starttime'] ) ,
+					'title' => processDate ( $hour['starttime'] , $dateFormat ) ,
 					'value' => $hour['avgresponse'] ,
 				];
 			}
