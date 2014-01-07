@@ -9,7 +9,6 @@ If you only have a few host checks I recommend adding ```autohost=true``` to you
 /* file: config.php */
 
 $pingdomCredentials = [
-	'appKey' => 'your api key here' , // Chuck your Pingdom API key here
 	'username' => 'pingdom@pretendco.com' , // Put in your login name here
 	'password' => 'password' , // And your password goes here
 ];
@@ -31,9 +30,6 @@ $checkHosts = [
 Log into [My Pingdom](https://my.pingdom.com) then for each host you want to check, to go the "Edit Check" for each host then copy the ID from the address bar (see image below)
 
 ![Edit Check](http://www.yesdevnull.net/wp-content/uploads/2014/01/Edit_Check.png)
-
-### How Do I Get An API Key?
-Check out the Pingdom API's [Authentication](https://www.pingdom.com/features/api/documentation/#authentication) section for further instructions.
 
 ### Time And Date Stamps
 

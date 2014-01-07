@@ -2,6 +2,10 @@
 
 require_once ( 'config.php' );
 
+// API Key for Pingdom for Status Board
+// As per: https://twitter.com/pingdom/status/420541439534067712
+$pingdomCredentials['appKey'] = 'fpyrvcla3w52w85i8u8pmo8j9vhxv8wv';
+
 $resolution = filter_input ( INPUT_GET , 'resolution' , FILTER_SANITIZE_STRING );
 $autoHost = filter_input ( INPUT_GET , 'autohost' , FILTER_SANITIZE_STRING );
 
