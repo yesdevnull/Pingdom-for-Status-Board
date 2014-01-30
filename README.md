@@ -50,3 +50,7 @@ Please note that I strip the year and seconds off all timestamps.  Having the ye
 
 ## TODO
 - Add support for more graphs like last hour, last month etc...
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/yesdevnull/pingdom-for-status-board/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
