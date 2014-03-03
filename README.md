@@ -1,4 +1,5 @@
-# Pingdom for Status Board
+# Pingdom for Status Board [![Project Status](http://stillmaintained.com/yesdevnull/Pingdom-for-Status-Board.png)](http://stillmaintained.com/yesdevnull/Pingdom-for-Status-Board)
+
 A graph of host response times from [Pingdom](http://pingdom.com) for Panic's [Status Board](http://panic.com/statusboard/) iPad app.
 
 ## Usage
@@ -29,7 +30,7 @@ $checkHosts = [
 
 Log into [My Pingdom](https://my.pingdom.com) then for each host you want to check, to go the "Edit Check" for each host then copy the ID from the address bar (see image below)
 
-![Edit Check](http://www.yesdevnull.net/wp-content/uploads/2014/01/Edit_Check.png)
+![Edit Check](http://yesdevnull.net/wp-content/uploads/2014/01/Edit_Check.png)
 
 ### Time And Date Stamps
 
