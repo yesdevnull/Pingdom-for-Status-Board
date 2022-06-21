@@ -1,6 +1,8 @@
-# Pingdom for Status Board [![Project Status](http://stillmaintained.com/yesdevnull/Pingdom-for-Status-Board.png)](http://stillmaintained.com/yesdevnull/Pingdom-for-Status-Board)
+# Pingdom for Status Board
 
 A graph of host response times from [Pingdom](http://pingdom.com) for Panic's [Status Board](http://panic.com/statusboard/) iPad app.
+
+**Note:** this is not maintained and has been archived.
 
 ## Usage
 If you only have a few host checks I recommend adding ```autohost=true``` to your query string.  ```autohost``` will pull __every__ host from Pingdom and graph its response time, so if you have 5+ hosts, your graph may look horrible.  If you'd rather only see certain hosts, specify them in the config.php file like below.
